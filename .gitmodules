@@ -2,7 +2,3 @@
 	path = ai4-cvat
 	url = https://github.com/ai4os/ai4-cvat
 	branch = v2.7.3-AI4OS
-[submodule "DEEP-OC-federated-server"]
-	path = DEEP-OC-federated-server
-	url = https://github.com/deephdc/DEEP-OC-federated-server
-	branch = main

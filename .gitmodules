@@ -1,7 +1,3 @@
-[submodule "ai4-cvat"]
-	path = ai4-cvat
-	url = https://github.com/ai4os/ai4-cvat
-	branch = v2.7.3-AI4OS
 [submodule "ai4os-federated-server"]
 	path = ai4os-federated-server
 	url = https://github.com/ai4os/ai4os-federated-server

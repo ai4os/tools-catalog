@@ -2,3 +2,7 @@
 	path = ai4os-federated-server
 	url = https://github.com/ai4os/ai4os-federated-server
 	branch = main
+[submodule "ai4os-cvat"]
+	path = ai4os-cvat
+	url = https://github.com/ai4os/ai4os-cvat
+	branch = v2.7.3-AI4OS

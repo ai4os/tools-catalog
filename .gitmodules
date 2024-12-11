@@ -13,3 +13,6 @@
 	path = ai4os-dev-env
 	url = https://github.com/ai4os/ai4os-dev-env
 	branch = main
+[submodule "ai4-llm"]
+	path = ai4-llm
+	url = https://github.com/ai4os/ai4-llm

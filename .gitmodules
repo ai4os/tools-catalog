@@ -16,3 +16,7 @@
 [submodule "ai4-llm"]
 	path = ai4-llm
 	url = https://github.com/ai4os/ai4-llm
+[submodule "ai4os-ai4life-loader"]
+	path = ai4os-ai4life-loader
+	url = https://github.com/ai4os/ai4os-ai4life-loader
+	branch = main

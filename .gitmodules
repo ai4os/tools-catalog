@@ -5,7 +5,7 @@
 [submodule "ai4os-cvat"]
 	path = ai4os-cvat
 	url = https://github.com/ai4os/ai4os-cvat
-	branch = v2.7.3-AI4OS
+	branch = v2.28.0-AI4OS
 [submodule "ai4os-nvflare"]
 	path = ai4os-nvflare
 	url = https://github.com/ai4os/ai4os-nvflare

@@ -9,3 +9,14 @@
 [submodule "ai4os-nvflare"]
 	path = ai4os-nvflare
 	url = https://github.com/ai4os/ai4os-nvflare
+[submodule "ai4os-dev-env"]
+	path = ai4os-dev-env
+	url = https://github.com/ai4os/ai4os-dev-env
+	branch = main
+[submodule "ai4os-ai4life-loader"]
+	path = ai4os-ai4life-loader
+	url = https://github.com/ai4os/ai4os-ai4life-loader
+	branch = main
+[submodule "ai4os-llm"]
+	path = ai4os-llm
+	url = https://github.com/ai4os/ai4os-llm

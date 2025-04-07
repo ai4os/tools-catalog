@@ -17,3 +17,7 @@
 [submodule "ai4os-llm"]
 	path = ai4os-llm
 	url = https://github.com/ai4os/ai4os-llm
+[submodule "ai4os-nvflare"]
+	path = ai4os-nvflare
+	url = https://github.com/ai4os/ai4os-nvflare
+	branch = main

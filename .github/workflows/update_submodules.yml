@@ -1,0 +1,168 @@
+name: Update All Submodules
+on:
+  # Allows you to run this workflow manually from the Actions tab or through HTTP API
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # Run every day at midnight
+
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Configure Git
+      run: |
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Actions"
+        
+    - name: Update All Submodules Automatically
+      run: |
+        echo "🔍 Scanning for submodules in this repository..."
+        
+        # Check if this repository has submodules
+        if [ ! -f .gitmodules ]; then
+          echo "ℹ️  No .gitmodules file found. This repository has no submodules to update."
+          exit 0
+        fi
+        
+        # Get list of all submodules
+        submodules=$(git config --file .gitmodules --get-regexp path | awk '{ print $2 }')
+        
+        if [ -z "$submodules" ]; then
+          echo "ℹ️  No submodules found in .gitmodules file."
+          exit 0
+        fi
+        
+        echo "📦 Found submodules:"
+        for submodule in $submodules; do
+          echo "  - $submodule"
+        done
+        echo ""
+        
+        changes_made=false
+        updated_modules=""
+        
+        # Process each submodule
+        for submodule in $submodules; do
+          echo "🔄 Processing submodule: $submodule"
+          
+          if [ ! -d "$submodule" ]; then
+            echo "   ⚠️  Submodule directory '$submodule' not found, skipping..."
+            continue
+          fi
+          
+          # Get the remote URL for this submodule
+          submodule_url=$(git config --file .gitmodules --get "submodule.$submodule.url")
+          
+          if [ -z "$submodule_url" ]; then
+            echo "   ⚠️  Could not find URL for submodule '$submodule', skipping..."
+            continue
+          fi
+          
+          echo "   📍 Repository: $submodule_url"
+          
+          # Extract owner/repo from GitHub URL
+          if [[ $submodule_url =~ github\.com[:/]([^/]+)/([^/]+)(\.git)?$ ]]; then
+            owner="${BASH_REMATCH[1]}"
+            repo="${BASH_REMATCH[2]}"
+            repo="${repo%.git}"  # Remove .git suffix if present
+            
+            # Get the default branch for this repository
+            default_branch=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/$owner/$repo" | jq -r '.default_branch // "main"')
+            
+            if [ "$default_branch" = "null" ] || [ -z "$default_branch" ]; then
+              echo "   ⚠️  Could not determine default branch for $owner/$repo, using 'main'"
+              default_branch="main"
+            fi
+            
+            echo "   🔗 Default branch: $default_branch"
+            
+            # Get latest commit from the default branch
+            latest_commit=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/$owner/$repo/commits/$default_branch" | jq -r '.sha')
+            
+            if [ "$latest_commit" = "null" ] || [ -z "$latest_commit" ]; then
+              echo "   ❌ Could not get latest commit for $owner/$repo on branch $default_branch, skipping..."
+              continue
+            fi
+            
+            # Get current commit in submodule
+            current_commit=$(git -C "$submodule" rev-parse HEAD 2>/dev/null || echo "")
+            
+            echo "   📋 Current commit: ${current_commit:0:8}"
+            echo "   📋 Latest commit:  ${latest_commit:0:8}"
+            
+            if [ "$current_commit" = "$latest_commit" ]; then
+              echo "   ✅ Submodule '$submodule' is already up to date"
+            else
+              echo "   🔄 Updating submodule '$submodule'..."
+              
+              # Update the submodule to point to the latest commit
+              if git submodule update --remote -- "$submodule" && git -C "$submodule" checkout "$latest_commit"; then
+                # Stage the submodule change
+                git add "$submodule"
+                changes_made=true
+                updated_modules="$updated_modules $submodule"
+                echo "   ✅ Successfully updated '$submodule'"
+              else
+                echo "   ❌ Failed to update '$submodule'"
+              fi
+            fi
+          else
+            echo "   ⚠️  Submodule '$submodule' does not appear to be a GitHub repository"
+            echo "       URL: $submodule_url"
+            echo "       Skipping automated update (only GitHub repos are supported)"
+          fi
+          
+          echo ""
+        done
+        
+        # Set outputs for next step
+        echo "changes_made=$changes_made" >> $GITHUB_OUTPUT
+        echo "updated_modules=$updated_modules" >> $GITHUB_OUTPUT
+        
+    - name: Commit and Push Changes
+      run: |
+        if git diff-index --quiet HEAD --; then
+          echo "✅ No changes to commit. All submodules are up to date."
+        else
+          # Get list of updated submodules
+          updated_submodules=$(git diff --name-only --cached | grep -E '^[^/]+$' | sort)
+          
+          if [ -n "$updated_submodules" ]; then
+            # Create descriptive commit message
+            submodule_list=$(echo "$updated_submodules" | tr '\n' ' ' | sed 's/ $//')
+            commit_msg="chore: update submodules ($submodule_list)"
+            
+            echo "💾 Committing changes..."
+            echo "📝 Commit message: $commit_msg"
+            
+            if git commit -m "$commit_msg"; then
+              echo "🚀 Pushing changes..."
+              if git push; then
+                echo "✅ Successfully pushed submodule updates!"
+                echo ""
+                echo "📊 Summary:"
+                echo "Updated submodules: $submodule_list"
+              else
+                echo "❌ Failed to push changes"
+                exit 1
+              fi
+            else
+              echo "❌ Failed to commit changes"
+              exit 1
+            fi
+          else
+            echo "ℹ️  No submodule changes detected to commit"
+          fi
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

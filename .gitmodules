@@ -21,3 +21,6 @@
 	path = ai4os-nvflare
 	url = https://github.com/ai4os/ai4os-nvflare
 	branch = main
+[submodule "arena-simulation-fedllm"]
+	path = arena-simulation-fedllm
+	url = https://github.com/ai4os/arena-simulation-fedllm.git

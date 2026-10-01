@@ -24,3 +24,6 @@
 [submodule "arena-simulation-fedllm"]
 	path = arena-simulation-fedllm
 	url = https://github.com/ai4os/arena-simulation-fedllm.git
+[submodule "arena-fl-server-llm"]
+	path = arena-fl-server-llm
+	url = https://github.com/ai4os/arena-fl-server-llm
